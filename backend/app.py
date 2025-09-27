@@ -1,6 +1,13 @@
 from flask import Flask, jsonify, request
 import os
-import google.generativeai as genai
+from google import genai
+from GeminiRecipe.GeminiRecipe import Recipe
+
+
+"""config={
+        			"response_mime_type": "application/json",
+        			"response_schema": list[Recipe],
+    },"""
 
 def create_app(config=None):
 	"""Create and return a minimal Flask app with a genai client."""
@@ -13,8 +20,7 @@ def create_app(config=None):
 	# Initialize the genai client, prefer explicit API key env vars if provided.
 	api_key=os.environ['GOOGLE_API_KEY']
 	if api_key:
-		genai.configure(api_key=api_key)
-		model = genai.GenerativeModel(model_name='gemini-2.5-pro')
+		client = genai.Client(api_key=api_key)
 	else:
 		print("No Active GOOGLE_API_KEY found; genai client not created.")
 		exit(0)
@@ -24,7 +30,9 @@ def create_app(config=None):
 		"""Call the model and return a short response (with basic error handling)."""
 		try:
 			query="Pick a random number between 1 and 10, inclusive. Don't return anything else."
-			response = model.generate_content(query)
+			response = client.models.generate_content(
+    			model="gemini-2.5-pro",
+    			contents=query)
 			text = getattr(response, "text", None) or str(response)
 			return jsonify({"response": text})
 		except Exception as e:
@@ -35,17 +43,26 @@ def create_app(config=None):
 	def health():
 		return jsonify({"status": "healthy"})
 
-	@app.route("/pushUserData", methods=["POST"])
+	@app.route("/pushUserData", methods=["GET", "POST"])
 	def processUserData():
-		desired_jobs = request.form.get('desired_jobs', '')
-		job_type = request.form.get('job_type', '')
-		education_level = request.form.get('education_level', '')
+		#desired_jobs = request.form.get('desired_jobs', '')
+		#job_type = request.form.get('job_type', '')
+		#education_level = request.form.get('education_level', '')
+
+		#query=f"Given the attached resume,  desired jobs: {desired_jobs}, job type: {job_type}, and education level: {education_level}, provide a detailed analysis of strengths, areas for improvement, a rating from 0 to 10, and next steps for career development."
+		query= "Fill out the following schema based on a hallucinated resume and profile"
+		response = client.models.generate_content(
+    		model="gemini-2.5-pro",
+    		contents=query,
+    		config={
+       			"response_mime_type": "application/json",
+        		"response_schema": list[Recipe],
+    },
+)
+		return jsonify({"response" : response.text})
 		#get resume
 
 		#prompt to gemini using above data
-
-
-		return jsonify({"received": request.get_json(silent=True)})
 
 	return app
 
