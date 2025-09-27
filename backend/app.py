@@ -50,7 +50,11 @@ def create_app(config=None):
 		#education_level = request.form.get('education_level', '')
 
 		#query=f"Given the attached resume,  desired jobs: {desired_jobs}, job type: {job_type}, and education level: {education_level}, provide a detailed analysis of strengths, areas for improvement, a rating from 0 to 10, and next steps for career development."
-		query= "Fill out the following schema based on a hallucinated resume and profile."
+		prompt = """Review this person’s resume. This person is currently a (education level) student looking for (job type) jobs in (desired_role).\
+			  	Please list the résumé’s strengths, how it could be improved, and a rating between 1 and 10 inclusive, based on desired role and job type.\
+				Additionally, please list the next practical steps this person can take to further improve their resume."""
+		
+		query= "Fill out the following schema based on a hallucinated resume and profile."""
 		response = client.models.generate_content(
     		model="gemini-2.5-pro",
     		contents=query,
@@ -61,9 +65,6 @@ def create_app(config=None):
 )
 		parsed = json.loads(response.text)
 		return jsonify({"response" : parsed})
-
-
-		#prompt to gemini using above data
 
 	return app
 
