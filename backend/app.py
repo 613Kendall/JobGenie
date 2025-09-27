@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import json
 import os
 from google import genai
 from GeminiRecipe.GeminiRecipe import Recipe
@@ -50,7 +51,7 @@ def create_app(config=None):
 		#education_level = request.form.get('education_level', '')
 
 		#query=f"Given the attached resume,  desired jobs: {desired_jobs}, job type: {job_type}, and education level: {education_level}, provide a detailed analysis of strengths, areas for improvement, a rating from 0 to 10, and next steps for career development."
-		query= "Fill out the following schema based on a hallucinated resume and profile"
+		query= "Fill out the following schema based on a hallucinated resume and profile."
 		response = client.models.generate_content(
     		model="gemini-2.5-pro",
     		contents=query,
@@ -59,7 +60,8 @@ def create_app(config=None):
         		"response_schema": list[Recipe],
     },
 )
-		return jsonify({"response" : response.text})
+		parsed = json.loads(response.text)
+		return jsonify({"response" : parsed})
 		#get resume
 
 		#prompt to gemini using above data
