@@ -3,6 +3,7 @@ import json
 import os
 from google import genai
 from GeminiRecipe.GeminiRecipe import Recipe
+import requests
 
 
 """config={
@@ -43,6 +44,11 @@ def create_app(config=None):
 	@app.route("/health")
 	def health():
 		return jsonify({"status": "healthy"})
+
+	@app.route("/jobs")
+	def jobs():
+		jobs = requests.get('https://python-d1.willstabile.workers.dev/')
+		return jobs.text
 
 	@app.route("/pushUserData", methods=["GET", "POST"])
 	def processUserData():
