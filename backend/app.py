@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 import json
 import os
 from google import genai
@@ -14,6 +15,7 @@ import requests
 def create_app(config=None):
 	"""Create and return a minimal Flask app with a genai client."""
 	app = Flask(__name__)
+	CORS(app)
 
 	# Apply optional configuration
 	if config:
