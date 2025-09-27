@@ -29,17 +29,7 @@ def create_app(config=None):
 
 	@app.route("/")
 	def index():
-		"""Call the model and return a short response (with basic error handling)."""
-		try:
-			query="Pick a random number between 1 and 10, inclusive. Don't return anything else."
-			response = client.models.generate_content(
-    			model="gemini-2.5-pro",
-    			contents=query)
-			text = getattr(response, "text", None) or str(response)
-			return jsonify({"response": text})
-		except Exception as e:
-			print("Error calling genai model:", e)
-			return jsonify({"error": str(e)}), 500
+		return jsonify({"status": "ok", "code": 200})
 
 	@app.route("/health")
 	def health():
@@ -52,6 +42,7 @@ def create_app(config=None):
 
 	@app.route("/pushUserData", methods=["GET", "POST"])
 	def processUserData():
+		#get resume
 		#desired_jobs = request.form.get('desired_jobs', '')
 		#job_type = request.form.get('job_type', '')
 		#education_level = request.form.get('education_level', '')
@@ -69,7 +60,6 @@ def create_app(config=None):
 		parsed = json.loads(response.text)
 		return jsonify({"response" : parsed})
 
-		#get resume
 
 		#prompt to gemini using above data
 
