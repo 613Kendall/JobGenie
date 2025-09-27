@@ -1,4 +1,4 @@
-# JobGenie
+# Backend
 
 This repository contains the JobGenie frontend and a minimal Flask backend located in `backend/`.
 
