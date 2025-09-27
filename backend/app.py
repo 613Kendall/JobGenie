@@ -62,6 +62,7 @@ def create_app(config=None):
 )
 		parsed = json.loads(response.text)
 		return jsonify({"response" : parsed})
+
 		#get resume
 
 		#prompt to gemini using above data
