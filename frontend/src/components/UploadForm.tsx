@@ -95,15 +95,20 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
           {/* Desired Jobs */}
           <div className="space-y-2">
             <Label htmlFor="desired-jobs">Desired Job Positions</Label>
-            <Input
-              id="desired-jobs"
-              placeholder="e.g., Software Engineer, Product Manager, Data Scientist"
-              value={desiredJobs}
-              onChange={(e) => setDesiredJobs(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">
-              List the types of positions you're interested in
-            </p>
+            <Select value={desiredJobs} onValueChange={setDesiredJobs}>
+            <SelectTrigger>
+                <SelectValue placeholder="Select your desired role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="artificial intelligence">Artificial Intelligence</SelectItem>
+                <SelectItem value="it infastucture">IT Infrastructure</SelectItem>
+                <SelectItem value="project managment">Project Management</SelectItem>
+                <SelectItem value="cyber security">Cyber Security</SelectItem>
+                <SelectItem value="software development">Software Development</SelectItem>
+                <SelectItem value="data science">Data Science</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Employment Type */}
