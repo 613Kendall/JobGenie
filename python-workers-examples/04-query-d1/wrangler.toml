@@ -1,0 +1,23 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "python-d1"
+compatibility_date = "2025-08-14"
+main = "src/entry.py"
+compatibility_flags = ["python_workers"]
+
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "d1-name" # REPLACE WITH YOUR DB NAME
+database_id = "db-id" # REPLACE WITH YOUR DB ID
+
+# wrangler.toml (wrangler v3.88.0^)
+[observability.logs]
+enabled = false
+
+
+
+
+
