@@ -134,13 +134,15 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
                 <SelectValue placeholder="Select your current academic year" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="freshman">First Year</SelectItem>
-                <SelectItem value="sophomore">Second Year</SelectItem>
-                <SelectItem value="junior">Third Year</SelectItem>
-                <SelectItem value="senior">Fourth Year</SelectItem>
-                <SelectItem value="graduate">Graduate Student(Masters)</SelectItem>
-                <SelectItem value="recent-grad">Recent Graduate(Bachelors)</SelectItem>
-                <SelectItem value="phd">Graduate Student(PHD)</SelectItem>
+                <SelectItem value="freshman">First Year Undergraduate</SelectItem>
+                <SelectItem value="sophomore">Second Year Undergraduate</SelectItem>
+                <SelectItem value="junior">Third Year Undergraduate</SelectItem>
+                <SelectItem value="senior">Fourth Year or Above Undergraduate</SelectItem>
+                <SelectItem value="graduate1">Graduate Student (Masters)</SelectItem>
+                <SelectItem value="graduate2">Graduate Student (PHD)</SelectItem>
+                <SelectItem value="recentgrad1">Recent Graduate (Undergraduate)</SelectItem>
+                <SelectItem value="recentgrad2">Recent Graduate (Masters)</SelectItem>
+                <SelectItem value="recentgrad3">Recent Graduate (PHD)</SelectItem>
               </SelectContent>
             </Select>
           </div>
