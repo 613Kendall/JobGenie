@@ -44,7 +44,7 @@ def create_app(config=None):
 		jobs = requests.get('https://python-d1.willstabile.workers.dev/')
 		return jobs.text
 
-	@app.route("/pushUserData", methods=["GET", "POST"])
+	@app.route("/pushUserData", methods=["POST"])
 	def processUserData():
 		
 		# 1. Handle the PDF from request body
@@ -57,9 +57,9 @@ def create_app(config=None):
 			return jsonify({"error": "No resume file provided"}), 400
 
 		# 2. Extract job parameters from query parameters
-		desired_jobs = request.args.get('desired_jobs', 'Software Engineer')
-		job_type = request.args.get('job_type', 'full_time')
-		education_level = request.args.get('education_level', 'freshman')
+		desired_jobs = request.form.get('desired_jobs', 'Software Engineer')
+		job_type = request.form.get('job_type', 'full_time')
+		education_level = request.form.get('education_level', 'freshman')
 		
 		print(f"Desired Jobs: {desired_jobs}")
 		print(f"Job Type: {job_type}")
