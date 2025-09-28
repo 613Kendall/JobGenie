@@ -3,6 +3,7 @@ from flask_cors import CORS
 import json
 import os
 import time
+from datetime import date
 import io
 from google import genai
 from GeminiRecipe.GeminiRecipe import Recipe
@@ -77,37 +78,24 @@ def create_app(config=None):
 		3. Overall rating from 0-10 considering their target role and education level
 		4. Next steps for career development in their desired field
 
+		Today's date is {date.today()} for context.
+
 		Format the response as a JSON object matching the provided schema."""
 
 		try:
-			# First, upload the PDF to Gemini Files API
-			print("Uploading PDF to Gemini Files API...")
-			
-			# Create a temporary file-like object from the PDF bytes
-			import io
-			pdf_file_obj = io.BytesIO(pdf_content)
-			
-			# Upload the PDF file to Gemini
-			uploaded_file = client.files.upload(
-				file=pdf_file_obj,
-			)
-			print(f"PDF uploaded successfully. File URI: {uploaded_file.uri}")
+			#create the file temporarily, then upload to Gemini
+			tempFileName = "temp_resume.pdf"
+			with open(tempFileName, "wb") as f:
+				f.write(pdf_content)
+			f.close()
 
-			# Wait for the file to be processed
-			while uploaded_file.state.name == "PROCESSING":
-				print("Waiting for file processing...")
-				time.sleep(2)
-				uploaded_file = client.files.get(uploaded_file.name)
+			pdf_file = client.files.upload(file=tempFileName)
 			
-			if uploaded_file.state.name == "FAILED":
-				raise Exception("PDF processing failed")
-
-			print(f"File processing complete. State: {uploaded_file.state.name}")
 
 			# Create the content with both the PDF and text prompt
 			response = client.models.generate_content(
 				model="gemini-2.5-pro",
-				contents=[uploaded_file, query],
+				contents=[pdf_file, query],
 				config={
 					"response_mime_type": "application/json",
 					"response_schema": list[Recipe],
@@ -116,10 +104,13 @@ def create_app(config=None):
 			
 			# Clean up the uploaded file
 			try:
-				client.files.delete(uploaded_file.name)
+				client.files.delete(name=pdf_file.name)
 				print("Temporary file cleaned up")
 			except Exception as cleanup_error:
-				print(f"Warning: Could not delete temporary file: {cleanup_error}")
+				print(f"Warning: Could not delete temporary file from Gemini: {cleanup_error}")
+			
+			if os.path.exists(tempFileName):
+				os.remove(tempFileName)
 			
 			# Parse the response and format it for the frontend
 			parsed = json.loads(response.text)
