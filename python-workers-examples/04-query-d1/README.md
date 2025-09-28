@@ -1,18 +1,15 @@
-# D1 Database Query Example
-
-Warning: Python support in Workers is experimental and things will break. This
-example is meant for reference only right now; you should be prepared to update
-your code between now and official release time as APIs may change.
-
 ## How to Run
 
-First ensure that `uv` is installed:
-https://docs.astral.sh/uv/getting-started/installation/#standalone-installer
+First ensure that you have a cloudflare d1 database:
+`npx wrangler d1 create mydb`
+`npx wrangler d1 info mydb`
 
-Run `uv run pywrangler d1 execute quotes --local --file db_init.sql` to
-initialize the d1 database.
+Now, create the job table by running:
+`npx wrangler d1 execute mydb --command="CREATE TABLE IF NOT EXISTS jobs (id INTEGER PRIMARY KEY, title TEXT NOT NULL,  type TEXT NOT NULL, company TEXT NOT NULL, link TEXT NOT NULL, description TEXT NOT NULL, opening TEXT NOT NULL);"`
 
-Now, if you run `uv run pywrangler dev` within this directory, it should use the config
-in `wrangler.toml` to run the example.
+You can also run `npx wrangler deploy` to deploy the database.
 
-You can also run `uv run pywrangler deploy` to deploy the example.
+In the wrangler.toml file, change database_name and database_id accordingly:
+`database_name = "<YOUR-DB-NAME>"`
+`database_id = "<YOUR-DB-ID>" # REPLACE WITH YOUR DB ID`
+
