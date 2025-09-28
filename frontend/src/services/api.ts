@@ -18,7 +18,7 @@ const isDevelopment = (() => {
 
 // API Configuration with safe defaults
 const apiConfig = {
-  baseUrl: 'http://localhost:5000',
+  baseUrl: 'http://localhost:2000',
   key: '',
   timeout: 30000, // Increased to 30 seconds for AI processing
 };

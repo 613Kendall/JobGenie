@@ -8,7 +8,7 @@ import io
 from google import genai
 from GeminiRecipe.GeminiRecipe import Recipe
 import requests
-
+import random
 
 """config={
         			"response_mime_type": "application/json",
@@ -84,7 +84,7 @@ def create_app(config=None):
 
 		try:
 			#create the file temporarily, then upload to Gemini
-			tempFileName = "temp_resume.pdf"
+			tempFileName = "temp_resume" + str(random.randint(1,9999)) + ".pdf"
 			with open(tempFileName, "wb") as f:
 				f.write(pdf_content)
 			f.close()
