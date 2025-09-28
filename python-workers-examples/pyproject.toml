@@ -1,7 +1,7 @@
 [project]
-name = "python-workers-examples"
+name = "python-worker-d1"
 version = "0.1.0"
-description = "Add your description here"
+description = "d1-jobs"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = []
@@ -13,3 +13,4 @@ dev = [
     "requests>=2.32.5",
     "ruff>=0.12.10",
 ]
+
