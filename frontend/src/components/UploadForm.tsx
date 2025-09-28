@@ -106,7 +106,7 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
                 <SelectItem value="cyber security">Cyber Security</SelectItem>
                 <SelectItem value="software development">Software Development</SelectItem>
                 <SelectItem value="data science">Data Science</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
+                <SelectItem value="other">Any</SelectItem>
               </SelectContent>
             </Select>
           </div>
