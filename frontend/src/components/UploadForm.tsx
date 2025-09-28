@@ -122,6 +122,7 @@ export function UploadForm({ onSubmit }: UploadFormProps) {
                 <SelectItem value="full-time">Full-time Positions</SelectItem>
                 <SelectItem value="internship">Internship Positions</SelectItem>
                 <SelectItem value="both">Both Full-time and Internships</SelectItem>
+                <SelectItem value="any">Any Job Type</SelectItem>
               </SelectContent>
             </Select>
           </div>

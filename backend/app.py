@@ -87,27 +87,47 @@ def create_app(config=None):
 			
 			print(f"Job search request - Desired: {desired_jobs}, Type: {employment_type}, Year: {year_in_school}")
 			
+			# Check if we should skip filtering
+			skip_job_filtering = desired_jobs in ['any', 'other'] or employment_type in ['any', 'both']
+			if skip_job_filtering:
+				print(f"Skipping job filtering - returning all available jobs")
+			
 			# Fetch jobs from the external API
 			jobs_response = requests.get('https://python-d1.willstabile.workers.dev/')
 			if jobs_response.status_code != 200:
 				return jsonify({"error": "Failed to fetch jobs"}), 500
 			
 			jobs_data = jobs_response.json()
+			print(f"Fetched {len(jobs_data)} total jobs from external API")
+			
+			# Count jobs by type for debugging
+			job_types = {}
+			for job in jobs_data:
+				job_type = job.get('type', 'unknown')
+				job_types[job_type] = job_types.get(job_type, 0) + 1
+			print(f"Job types distribution: {job_types}")
 			
 			# Transform and filter jobs
 			all_jobs = []
 			preferred_jobs = []
+			filtered_out_count = 0
 			
 			for job in jobs_data:
-				# Skip jobs with type "ignore"
-				if job.get('type') == 'ignore':
+				# Only skip jobs that are explicitly marked to ignore AND have no useful data
+				# Don't filter out jobs just because they have type "ignore" - they might still be valid jobs
+				title = job.get('title', '').strip()
+				company = job.get('company', '').strip()
+				
+				# Skip only if we have no meaningful job data
+				if not title or not company:
+					filtered_out_count += 1
 					continue
 				
 				# Calculate match score based on desired jobs
 				match_score = calculate_match_score(job, desired_jobs)
 				
-				# Map job type
-				job_type = map_job_type(job.get('type', ''))
+				# Map job type (pass title for better inference)
+				job_type = map_job_type(job.get('type', ''), job.get('title', ''))
 				
 				# Transform job to match frontend interface
 				transformed_job = {
@@ -127,13 +147,20 @@ def create_app(config=None):
 				# Add to appropriate list
 				all_jobs.append(transformed_job)
 				
-				# Check if job matches employment type preference
-				type_match = (employment_type == 'both' or 
-							(employment_type == 'internship' and job_type == 'Internship') or
-							(employment_type == 'full-time' and job_type == 'Full-time'))
-				
-				if type_match:
+				# If desired_jobs is 'any' or employment_type is 'any'/'both', don't filter at all
+				if skip_job_filtering:
 					preferred_jobs.append(transformed_job)
+				else:
+					# Check if job matches employment type preference
+					type_match = (employment_type == 'internship' and job_type == 'Internship') or \
+								(employment_type == 'full-time' and job_type == 'Full-time')
+					
+					if type_match:
+						preferred_jobs.append(transformed_job)
+			
+			print(f"Filtered out {filtered_out_count} jobs with type 'ignore'")
+			print(f"Total processable jobs: {len(all_jobs)}")
+			print(f"Preferred jobs (matching criteria): {len(preferred_jobs)}")
 			
 			# Sort all jobs by match score
 			all_jobs.sort(key=lambda x: x['matchScore'], reverse=True)
@@ -181,21 +208,25 @@ def create_app(config=None):
 		title = job.get('title', '').lower()
 		company = job.get('company', '').lower()
 		
-		# Base score - more generous starting point
-		score = 50
-		
-		# Check for keyword matches in title
-		if desired_jobs:
-			desired_keywords = desired_jobs.split()
-			for keyword in desired_keywords:
-				keyword = keyword.lower().strip()
-				if len(keyword) > 2:  # Ignore very short keywords
-					if keyword in title:
-						score += 20  # Higher bonus for title matches
-					elif keyword in company:
-						score += 15  # Good bonus for company matches
-					elif any(keyword in word for word in title.split()):
-						score += 10  # Partial word matches
+		# If desired_jobs is 'any' or 'other', give all jobs a good base score
+		if desired_jobs in ['any', 'other']:
+			score = 70  # Higher base score when no specific preference
+		else:
+			# Base score - more generous starting point
+			score = 50
+			
+			# Check for keyword matches in title
+			if desired_jobs:
+				desired_keywords = desired_jobs.split()
+				for keyword in desired_keywords:
+					keyword = keyword.lower().strip()
+					if len(keyword) > 2:  # Ignore very short keywords
+						if keyword in title:
+							score += 20  # Higher bonus for title matches
+						elif keyword in company:
+							score += 15  # Good bonus for company matches
+						elif any(keyword in word for word in title.split()):
+							score += 10  # Partial word matches
 		
 		# General tech-related bonuses
 		tech_terms = ['software', 'engineer', 'developer', 'programmer', 'tech', 'computer', 'data', 'analyst']
@@ -237,10 +268,17 @@ def create_app(config=None):
 		# Cap at 100
 		return min(score, 100)
 
-	def map_job_type(job_type):
-		"""Map job type from API to frontend format"""
+	def map_job_type(job_type, job_title=""):
+		"""Map job type from API to frontend format, with title-based inference"""
 		if job_type == 'intern':
 			return 'Internship'
+		elif job_type == 'ignore':
+			# For jobs marked as 'ignore', infer type from title
+			title_lower = job_title.lower()
+			if any(term in title_lower for term in ['intern', 'internship', 'summer', 'co-op']):
+				return 'Internship'
+			else:
+				return 'Full-time'
 		else:
 			return 'Full-time'
 
