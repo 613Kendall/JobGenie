@@ -26,7 +26,7 @@ def create_app(config=None):
 		client = genai.Client(api_key=api_key)
 		# Load in database from cloud into a Python dictionary
 		try:
-			resp = requests.get('https://python-d1.willstabile.workers.dev/')
+			resp = requests.get('CLOUDFLARE_D1_LINK')
 			resp.raise_for_status()
 			JOBS_DB = resp.json()
 			print("Loaded remote DB successfully.")
@@ -93,7 +93,7 @@ def create_app(config=None):
 				print(f"Skipping job filtering - returning all available jobs")
 			
 			# Fetch jobs from the external API
-			jobs_response = requests.get('https://python-d1.willstabile.workers.dev/')
+			jobs_response = requests.get('CLOUDFLARE_D1_LINK')
 			if jobs_response.status_code != 200:
 				return jsonify({"error": "Failed to fetch jobs"}), 500
 			
