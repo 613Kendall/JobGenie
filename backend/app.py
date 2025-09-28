@@ -2,6 +2,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import json
 import os
+import time
+import io
 from google import genai
 from GeminiRecipe.GeminiRecipe import Recipe
 import requests
@@ -78,14 +80,46 @@ def create_app(config=None):
 		Format the response as a JSON object matching the provided schema."""
 
 		try:
+			# First, upload the PDF to Gemini Files API
+			print("Uploading PDF to Gemini Files API...")
+			
+			# Create a temporary file-like object from the PDF bytes
+			import io
+			pdf_file_obj = io.BytesIO(pdf_content)
+			
+			# Upload the PDF file to Gemini
+			uploaded_file = client.files.upload(
+				file=pdf_file_obj,
+			)
+			print(f"PDF uploaded successfully. File URI: {uploaded_file.uri}")
+
+			# Wait for the file to be processed
+			while uploaded_file.state.name == "PROCESSING":
+				print("Waiting for file processing...")
+				time.sleep(2)
+				uploaded_file = client.files.get(uploaded_file.name)
+			
+			if uploaded_file.state.name == "FAILED":
+				raise Exception("PDF processing failed")
+
+			print(f"File processing complete. State: {uploaded_file.state.name}")
+
+			# Create the content with both the PDF and text prompt
 			response = client.models.generate_content(
 				model="gemini-2.5-pro",
-				contents=query,
+				contents=[uploaded_file, query],
 				config={
 					"response_mime_type": "application/json",
 					"response_schema": list[Recipe],
 				},
 			)
+			
+			# Clean up the uploaded file
+			try:
+				client.files.delete(uploaded_file.name)
+				print("Temporary file cleaned up")
+			except Exception as cleanup_error:
+				print(f"Warning: Could not delete temporary file: {cleanup_error}")
 			
 			# Parse the response and format it for the frontend
 			parsed = json.loads(response.text)
@@ -104,6 +138,8 @@ def create_app(config=None):
 				
 		except Exception as e:
 			print(f"Error calling Gemini API: {e}")
+			import traceback
+			traceback.print_exc()
 			return jsonify({"error": str(e)}), 500
 
 	def get_rating_category(rating):
