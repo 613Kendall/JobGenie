@@ -12,7 +12,7 @@ export function HeroSection() {
       </div>
       
       <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-        Your AI-powered career companion that transforms your resume into targeted job opportunities
+        Where resumes meet wishes — your job genie at work.
       </p>
       
       <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
