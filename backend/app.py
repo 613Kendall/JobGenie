@@ -6,14 +6,10 @@ import time
 from datetime import date
 import io
 from google import genai
-from GeminiRecipe.GeminiRecipe import Recipe
+from GeminiRecipe.GeminiRecipe import Recipe, JobRecipe
 import requests
 import random
 
-"""config={
-        			"response_mime_type": "application/json",
-        			"response_schema": list[Recipe],
-    },"""
 
 def create_app(config=None):
 	"""Create and return a minimal Flask app with a genai client."""
@@ -28,6 +24,17 @@ def create_app(config=None):
 	api_key=os.environ['GOOGLE_API_KEY']
 	if api_key:
 		client = genai.Client(api_key=api_key)
+		# Load in database from cloud into a Python dictionary
+		try:
+			resp = requests.get('https://python-d1.willstabile.workers.dev/')
+			resp.raise_for_status()
+			JOBS_DB = resp.json()
+			print("Loaded remote DB successfully.")
+			print(f"DB Sample: {JOBS_DB}")
+		except Exception as e:
+			print(f"Warning: Could not load remote DB: {e}")
+			loaded_db = {}
+			exit(0)
 	else:
 		print("No Active GOOGLE_API_KEY found; genai client not created.")
 		exit(0)
@@ -40,10 +47,31 @@ def create_app(config=None):
 	def health():
 		return jsonify({"status": "healthy"})
 
-	@app.route("/jobs")
-	def jobs():
-		jobs = requests.get('https://python-d1.willstabile.workers.dev/')
-		return jobs.text
+	@app.route("/jobs/search", methods=["POST"])
+	def getJobs():
+		desired_jobs = request.form.get('desired_jobs', 'Software Engineer')
+		job_type = request.form.get('job_type', 'full_time')
+		education_level = request.form.get('education_level', 'freshman')
+		query = f"""Based on the available jobs listed here {JOBS_DB}, and the candidate's career goals:
+		- Desired job position: {desired_jobs}
+		- Employment type preference: {job_type}
+		- Education level: {education_level}
+		return jobs that match the candidate's profile and preferences."""
+
+		try:
+			response = client.models.generate_content(
+					model="gemini-2.5-pro",
+					contents= [query],
+					config={
+						"response_mime_type": "application/json",
+						"response_schema": list[JobRecipe],
+					},
+				)
+		except Exception as e:
+			print(f"Error calling Gemini API: {e}")
+			import traceback
+			traceback.print_exc()
+			return jsonify({"error": str(e)}), 500
 
 	@app.route("/pushUserData", methods=["POST"])
 	def processUserData():
