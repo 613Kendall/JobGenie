@@ -26,11 +26,13 @@ class Default(WorkerEntrypoint):
           if (query_params.get('desc')):
             query += " AND description LIKE ?"
             params.append(f"%{query_params.get('desc')[0]}%")
-
-          results = await self.env.DB.prepare(query).bind(*params).run()
-          data = results.results
-          # Return a JSON response
-          return Response.json(data)
+          try:
+              results = await self.env.DB.prepare(query).bind(*params).run()
+              data = results.results
+              # Return a JSON response
+              return Response.json(data)
+           except Exception as e:
+               return Response.new("Error Retrieving Jobs")
         
         elif request.method == "POST":
           for item in data:
@@ -40,5 +42,8 @@ class Default(WorkerEntrypoint):
             link = item["url"]
             description = item["description"]
             opening = item["opening"]
-            await self.env.DB.prepare("INSERT INTO jobs (title, type, company, link, description, opening) VALUES (?, ?, ?, ?, ?, ?)").bind(title, type, company, link, description, opening).run()
-          return Response.new("Jobs added successfully!", status=200)
+            try:
+                await self.env.DB.prepare("INSERT INTO jobs (title, type, company, link, description, opening) VALUES (?, ?, ?, ?, ?, ?)").bind(title, type, company, link, description, opening).run()
+                return Response.new("Jobs added successfully!", status=200)
+            except Exception as e:
+                return Response.new("Error Inserting jobs", status=403)
