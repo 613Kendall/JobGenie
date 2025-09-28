@@ -10,12 +10,13 @@ binding = "AI"
 
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
-database_name = "d1-database-jobs" # REPLACE WITH YOUR DB NAME
-database_id = "f525fb75-3c60-4786-bac1-1ea6fcd99ec3" # REPLACE WITH YOUR DB ID
+database_name = "d1-name" # REPLACE WITH YOUR DB NAME
+database_id = "db-id" # REPLACE WITH YOUR DB ID
 
 # wrangler.toml (wrangler v3.88.0^)
 [observability.logs]
 enabled = false
+
 
 
 
