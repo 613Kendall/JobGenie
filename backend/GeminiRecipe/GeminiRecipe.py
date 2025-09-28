@@ -5,7 +5,11 @@ class Recipe(BaseModel):
    rating: int = Field(ge=0, le=10)  # Rating between 0 and 10
    next_steps: list[str]
 
-class JobRecipe(BaseModel):
-   job_title: str
+
+class Job(BaseModel):
+   title: str
    company: str
-   application_link: str
+   url: str
+
+class JobRecipe(BaseModel):
+   jobs: list[Job]

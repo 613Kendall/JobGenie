@@ -67,6 +67,9 @@ def create_app(config=None):
 						"response_schema": list[JobRecipe],
 					},
 				)
+			parsed = json.loads(response.text)
+			return jsonify(parsed)
+		
 		except Exception as e:
 			print(f"Error calling Gemini API: {e}")
 			import traceback
