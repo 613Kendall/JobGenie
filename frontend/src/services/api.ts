@@ -18,9 +18,8 @@ const isDevelopment = (() => {
 
 // API Configuration with safe defaults
 const apiConfig = {
-  baseUrl: 'http://localhost:2000',
-  key: '',
-  timeout: 30000, // Increased to 30 seconds for AI processing
+  baseUrl: 'http://localhost:5000',
+  timeout: 30000 // Increased to 30 seconds for AI processing
 };
 
 const features = {
@@ -47,6 +46,7 @@ export interface Job {
   matchScore: number;
   description: string;
   requirements: string[];
+  link: string; // Added link field for job applications
   logo?: string;
 }
 
@@ -127,12 +127,22 @@ class ApiService {
       };
     } catch (error) {
       console.error('Resume analysis API error:', error);
-   
+      // Return error response instead of undefined
+      return {
+        success: false,
+        data: {
+          overallRating: 0,
+          ratingCategory: "Error",
+          strengths: [],
+          improvements: [],
+          nextSteps: []
+        },
+        message: error instanceof Error ? error.message : 'Unknown error occurred'
+      };
     }
   }
 
   async searchJobs(request: JobSearchRequest): Promise<ApiResponse<Job[]>> {
-
     try {
       const response = await this.fetchWithTimeout(`${apiConfig.baseUrl}/api/jobs/search`, {
         method: 'POST',
@@ -154,6 +164,12 @@ class ApiService {
       };
     } catch (error) {
       console.error('Job search API error:', error);
+      // Return error response instead of undefined
+      return {
+        success: false,
+        data: [],
+        message: error instanceof Error ? error.message : 'Failed to load job recommendations'
+      };
     }
   }
 }
