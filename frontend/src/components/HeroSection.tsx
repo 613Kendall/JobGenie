@@ -30,9 +30,9 @@ export function HeroSection() {
           <div className="p-3 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 group-hover:from-blue-600 group-hover:to-cyan-600 transition-all duration-300">
             <Target className="h-6 w-6 text-white" />
           </div>
-          <h3>Set Goals</h3>
+          <h3>Set Preferences</h3>
           <p className="text-sm text-muted-foreground text-center">
-            Tell us your dream roles and career aspirations
+            Share the roles and fields that interest you most
           </p>
         </div>
         
