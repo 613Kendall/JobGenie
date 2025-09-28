@@ -67,14 +67,14 @@ def create_app(config=None):
 
 		# Create a comprehensive prompt for Gemini
 		query = f"""Based on the attached resume, analyze the candidate's profile considering their career goals:
-		- Desired job positions: {desired_jobs}
+		- Desired job position: {desired_jobs}
 		- Employment type preference: {job_type}
 		- Education level: {education_level}
 
 		Provide a comprehensive resume analysis with:
 		1. Strengths - identify key strengths relevant to their desired positions
 		2. Areas for improvement - specific actionable improvements
-		3. Overall rating from 0-10 considering their target roles
+		3. Overall rating from 0-10 considering their target role and education level
 		4. Next steps for career development in their desired field
 
 		Format the response as a JSON object matching the provided schema."""
