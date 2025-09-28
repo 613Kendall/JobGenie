@@ -7,9 +7,12 @@ import { apiService, ResumeAnalysis } from '../services/api';
 interface ResumeReviewProps {
   fileName: string;
   resumeFile?: File;
+  desiredJobs?: string;
+  employmentType?: string;
+  yearInSchool?: string;
 }
 
-export function ResumeReview({ fileName, resumeFile }: ResumeReviewProps) {
+export function ResumeReview({ fileName, resumeFile, desiredJobs, employmentType, yearInSchool }: ResumeReviewProps) {
   const [analysis, setAnalysis] = useState<ResumeAnalysis | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +27,15 @@ export function ResumeReview({ fileName, resumeFile }: ResumeReviewProps) {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await apiService.analyzeResume(resumeFile);
+        
+        // Prepare job data if available
+        const jobData = desiredJobs && employmentType && yearInSchool ? {
+          desiredJobs,
+          employmentType,
+          yearInSchool
+        } : undefined;
+        
+        const response = await apiService.analyzeResume(resumeFile, jobData);
         
         if (response.success) {
           setAnalysis(response.data);

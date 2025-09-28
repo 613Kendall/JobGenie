@@ -37,7 +37,13 @@ export function ResultsScreen({ fileName, resumeFile, desiredJobs, employmentTyp
 
       {/* Resume Review Section */}
       <div>
-        <ResumeReview fileName={fileName} resumeFile={resumeFile} />
+        <ResumeReview 
+          fileName={fileName} 
+          resumeFile={resumeFile} 
+          desiredJobs={desiredJobs}
+          employmentType={employmentType}
+          yearInSchool={yearInSchool}
+        />
       </div>
 
       {/* Job Recommendations Section */}

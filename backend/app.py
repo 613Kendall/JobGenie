@@ -44,26 +44,80 @@ def create_app(config=None):
 
 	@app.route("/pushUserData", methods=["GET", "POST"])
 	def processUserData():
-		#get resume
-		#desired_jobs = request.form.get('desired_jobs', '')
-		#job_type = request.form.get('job_type', '')
-		#education_level = request.form.get('education_level', '')
+		
+		# 1. Handle the PDF from request body
+		pdf_content = None
+		if request.method == 'POST' and request.data:
+			pdf_content = request.data
+			print(f"Received PDF resume of size {len(pdf_content)} bytes")
+		else:
+			print("No PDF resume provided in request body")
+			return jsonify({"error": "No resume file provided"}), 400
 
-		#query=f"Given the attached resume,  desired jobs: {desired_jobs}, job type: {job_type}, and education level: {education_level}, provide a detailed analysis of strengths, areas for improvement, a rating from 0 to 10, and next steps for career development."
-		query= "Fill out the following schema based on a hallucinated resume and profile."
-		response = client.models.generate_content(
-    		model="gemini-2.5-pro",
-    		contents=query,
-    		config={
-       			"response_mime_type": "application/json",
-        		"response_schema": list[Recipe],
-    },
-)
-		parsed = json.loads(response.text)
-		return jsonify({"response" : parsed})
+		# 2. Extract job parameters from query parameters
+		desired_jobs = request.args.get('desired_jobs', 'Software Engineer')
+		job_type = request.args.get('job_type', 'full_time')
+		education_level = request.args.get('education_level', 'freshman')
+		
+		print(f"Desired Jobs: {desired_jobs}")
+		print(f"Job Type: {job_type}")
+		print(f"Education Level: {education_level}")
 
+		# Create a comprehensive prompt for Gemini
+		query = f"""Based on the attached resume, analyze the candidate's profile considering their career goals:
+		- Desired job positions: {desired_jobs}
+		- Employment type preference: {job_type}
+		- Education level: {education_level}
 
-		#prompt to gemini using above data
+		Provide a comprehensive resume analysis with:
+		1. Strengths - identify key strengths relevant to their desired positions
+		2. Areas for improvement - specific actionable improvements
+		3. Overall rating from 0-10 considering their target roles
+		4. Next steps for career development in their desired field
+
+		Format the response as a JSON object matching the provided schema."""
+
+		try:
+			response = client.models.generate_content(
+				model="gemini-2.5-pro",
+				contents=query,
+				config={
+					"response_mime_type": "application/json",
+					"response_schema": list[Recipe],
+				},
+			)
+			
+			# Parse the response and format it for the frontend
+			parsed = json.loads(response.text)
+			if parsed and len(parsed) > 0:
+				first_analysis = parsed[0]
+				formatted_response = {
+					"overallRating": first_analysis.get("rating", 8),
+					"ratingCategory": get_rating_category(first_analysis.get("rating", 8)),
+					"strengths": first_analysis.get("strengths", []),
+					"improvements": first_analysis.get("improvements", []),
+					"nextSteps": first_analysis.get("next_steps", [])
+				}
+				return jsonify(formatted_response)
+			else:
+				return jsonify({"error": "No analysis data received"}), 500
+				
+		except Exception as e:
+			print(f"Error calling Gemini API: {e}")
+			return jsonify({"error": str(e)}), 500
+
+	def get_rating_category(rating):
+		"""Convert numeric rating to category string"""
+		if rating >= 9:
+			return "Excellent Resume"
+		elif rating >= 8:
+			return "Strong Resume"
+		elif rating >= 7:
+			return "Good Resume"
+		elif rating >= 6:
+			return "Fair Resume"
+		else:
+			return "Needs Improvement"
 
 	return app
 
